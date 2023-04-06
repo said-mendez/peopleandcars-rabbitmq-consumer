@@ -21,7 +21,7 @@
     <modules>
 <!--        <module>model-api</module>-->
         <module>schema</module>
-<!--        <module>service</module>-->
+        <module>service</module>
     </modules>
 
 </project>
