@@ -8,19 +8,12 @@ import iuresti.training.peopleandcars.service.CarService;
 import iuresti.training.peopleandcars.service.PeopleCarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.context.request.NativeWebRequest;
 
-import javax.validation.constraints.*;
-import javax.validation.Valid;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import javax.annotation.Generated;
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-05T18:10:17.554620-06:00[America/Mexico_City]")
@@ -55,6 +48,7 @@ public class CarsApiController implements CarsApi {
 
     @Override
     public ResponseEntity<Map<String, Boolean>> deleteCar(String vin) {
+        carService.deleteCar(vin);
         Map<String, Boolean> map = new HashMap<>();
         map.put("sucess", true);
 

@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface CarDao extends CrudRepository<CarDB, String> {
     List<CarDB> findAll();
+    List<CarDB> findCarsByPeopleGuid(String guid);
 }

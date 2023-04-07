@@ -6,16 +6,19 @@ import iuresti.training.peopleandcars.modelapi.Car;
 import iuresti.training.peopleandcars.modeldb.CarDB;
 import iuresti.training.peopleandcars.repository.CarDao;
 import iuresti.training.peopleandcars.service.CarService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class CarServiceImpl implements CarService {
     private final CarDao carDao;
 
+    @Autowired
     public CarServiceImpl(CarDao carDao) {
         this.carDao = carDao;
     }
@@ -38,7 +41,10 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public Car addCar(Car car) throws MyCarBadRequestException {
+        UUID uuid = UUID.randomUUID();
+
         CarDB carDB = new CarDB();
+        carDB.setVin(uuid.toString());
         carDB.setBrand(car.getBrand());
         carDB.setModel(car.getModel());
         carDB.setYear(car.getYear());
@@ -57,9 +63,10 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public void updateCar(String id, Car car) throws MyCarResourceNotFoundException {
-        fetchCarById(id);
+        Car fetchedCar = fetchCarById(id);
 
         CarDB carDB = new CarDB();
+        carDB.setVin(fetchedCar.getVin());
         carDB.setBrand(car.getBrand());
         carDB.setModel(car.getModel());
         carDB.setYear(car.getYear());
@@ -110,5 +117,19 @@ public class CarServiceImpl implements CarService {
         carAPI.setColor(returnedCar.getColor());
 
         return carAPI;
+    }
+
+    @Override
+    public List<Car> findCarsByPeopleGuid(String guid) {
+        return carDao.findCarsByPeopleGuid(guid).stream().map(car -> {
+            Car carAPI = new Car();
+            carAPI.setVin(car.getVin());
+            carAPI.setBrand(car.getBrand());
+            carAPI.setModel(car.getModel());
+            carAPI.setColor(car.getColor());
+            carAPI.setYear(car.getYear());
+
+            return carAPI;
+        }).collect(Collectors.toList());
     }
 }

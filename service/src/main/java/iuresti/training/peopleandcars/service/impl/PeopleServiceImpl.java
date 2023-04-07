@@ -4,14 +4,15 @@ package iuresti.training.peopleandcars.service.impl;
 import iuresti.training.peopleandcars.exception.MyCarBadRequestException;
 import iuresti.training.peopleandcars.exception.MyCarResourceNotFoundException;
 import iuresti.training.peopleandcars.modelapi.People;
-import iuresti.training.peopleandcars.modeldb.CarDB;
 import iuresti.training.peopleandcars.modeldb.PeopleDB;
 import iuresti.training.peopleandcars.repository.PeopleDao;
 import iuresti.training.peopleandcars.service.PeopleService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class PeopleServiceImpl implements PeopleService {
     private final PeopleDao peopleDao;
 
+    @Autowired
     public PeopleServiceImpl(PeopleDao peopleDao) {
         this.peopleDao = peopleDao;
     }
@@ -41,7 +43,10 @@ public class PeopleServiceImpl implements PeopleService {
 
     @Override
     public People addPeople(People people) throws MyCarBadRequestException {
+        UUID uuid = UUID.randomUUID();
+
         PeopleDB peopleDB = new PeopleDB();
+        peopleDB.setGuid(uuid.toString());
         peopleDB.setFirstName(people.getFirstName());
         peopleDB.setLastName(people.getLastName());
         peopleDB.setEmail(people.getEmail());
@@ -61,9 +66,10 @@ public class PeopleServiceImpl implements PeopleService {
     @Transactional
     @Override
     public void updatePeople(String id, People people) throws MyCarResourceNotFoundException {
-        fetchPeopleById(id);
+        People fetchedPeople = fetchPeopleById(id);
 
         PeopleDB peopleDB = new PeopleDB();
+        peopleDB.setGuid(fetchedPeople.getGuid());
         peopleDB.setFirstName(people.getFirstName());
         peopleDB.setLastName(people.getLastName());
         peopleDB.setEmail(people.getEmail());
@@ -100,21 +106,39 @@ public class PeopleServiceImpl implements PeopleService {
     @Transactional
     @Override
     public People addPeopleWithGUID(String id, People people) throws MyCarBadRequestException {
-        PeopleDB peopleDB = new PeopleDB();
-        peopleDB.setGuid(id);
-        peopleDB.setFirstName(people.getFirstName());
-        peopleDB.setLastName(people.getLastName());
-        peopleDB.setEmail(people.getEmail());
-        peopleDB.setGender(people.getGender());
+        try {
+            PeopleDB peopleDB = new PeopleDB();
+            peopleDB.setGuid(id);
+            peopleDB.setFirstName(people.getFirstName());
+            peopleDB.setLastName(people.getLastName());
+            peopleDB.setEmail(people.getEmail());
+            peopleDB.setGender(people.getGender());
 
-        PeopleDB returnedPeople = peopleDao.save(peopleDB);
-        People peopleAPI = new People();
-        peopleAPI.setGuid(returnedPeople.getGuid());
-        peopleAPI.setFirstName(returnedPeople.getFirstName());
-        peopleAPI.setLastName(returnedPeople.getLastName());
-        peopleAPI.setEmail(returnedPeople.getEmail());
-        peopleAPI.setGender(returnedPeople.getGender());
+            PeopleDB returnedPeople = peopleDao.save(peopleDB);
+            People peopleAPI = new People();
+            peopleAPI.setGuid(returnedPeople.getGuid());
+            peopleAPI.setFirstName(returnedPeople.getFirstName());
+            peopleAPI.setLastName(returnedPeople.getLastName());
+            peopleAPI.setEmail(returnedPeople.getEmail());
+            peopleAPI.setGender(returnedPeople.getGender());
 
-        return peopleAPI;
+            return peopleAPI;
+        } catch (Exception e) {
+            throw new MyCarBadRequestException("Something went wrong! " + e);
+        }
+    }
+
+    @Override
+    public List<People> fetchAllCarPeople(String vin) {
+        return peopleDao.findPeopleByCarsVin(vin).stream().map(people -> {
+            People peopleAPI = new People();
+            peopleAPI.setGuid(people.getGuid());
+            peopleAPI.setFirstName(people.getFirstName());
+            peopleAPI.setLastName(people.getLastName());
+            peopleAPI.setEmail(people.getEmail());
+            peopleAPI.setGender(people.getGender());
+
+            return peopleAPI;
+        }).collect(Collectors.toList());
     }
 }
