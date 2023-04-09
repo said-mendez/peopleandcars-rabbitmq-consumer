@@ -5,6 +5,8 @@ import iuresti.training.peopleandcars.exception.MyCarResourceNotFoundException;
 import iuresti.training.peopleandcars.modelapi.Car;
 import iuresti.training.peopleandcars.modeldb.CarDB;
 import iuresti.training.peopleandcars.repository.CarDao;
+import iuresti.training.peopleandcars.service.CarDBMapper;
+import iuresti.training.peopleandcars.service.CarMapper;
 import iuresti.training.peopleandcars.service.CarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,62 +19,36 @@ import java.util.stream.Collectors;
 @Service
 public class CarServiceImpl implements CarService {
     private final CarDao carDao;
+    private final CarMapper carMapper;
+    private final CarDBMapper carDBMapper;
 
     @Autowired
-    public CarServiceImpl(CarDao carDao) {
+    public CarServiceImpl(CarDao carDao, CarMapper carMapper, CarDBMapper carDBMapper) {
         this.carDao = carDao;
+        this.carMapper = carMapper;
+        this.carDBMapper = carDBMapper;
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Car> fetchAllCars() {
-        return carDao.findAll().stream().map(car -> {
-            Car carAPI = new Car();
-
-            carAPI.setVin(car.getVin());
-            carAPI.setBrand(car.getBrand());
-            carAPI.setModel(car.getModel());
-            carAPI.setYear(car.getYear());
-            carAPI.setColor(car.getColor());
-
-            return carAPI;
-        }).collect(Collectors.toList());
+        return carDao.findAll().stream().map(carMapper).collect(Collectors.toList());
     }
 
     @Override
     public Car addCar(Car car) throws MyCarBadRequestException {
         UUID uuid = UUID.randomUUID();
+        car.setVin(uuid.toString());
+        CarDB returnedCar = carDao.save(carDBMapper.apply(car));
 
-        CarDB carDB = new CarDB();
-        carDB.setVin(uuid.toString());
-        carDB.setBrand(car.getBrand());
-        carDB.setModel(car.getModel());
-        carDB.setYear(car.getYear());
-        carDB.setColor(car.getColor());
-
-        CarDB returnedCar = carDao.save(carDB);
-        Car carAPI = new Car();
-        carAPI.setVin(returnedCar.getVin());
-        carAPI.setBrand(returnedCar.getBrand());
-        carAPI.setModel(returnedCar.getModel());
-        carAPI.setYear(returnedCar.getYear());
-        carAPI.setColor(returnedCar.getColor());
-
-        return carAPI;
+        return carMapper.apply(returnedCar);
     }
 
     @Override
     public void updateCar(String id, Car car) throws MyCarResourceNotFoundException {
-        Car fetchedCar = fetchCarById(id);
-
-        CarDB carDB = new CarDB();
-        carDB.setVin(fetchedCar.getVin());
-        carDB.setBrand(car.getBrand());
-        carDB.setModel(car.getModel());
-        carDB.setYear(car.getYear());
-        carDB.setColor(car.getColor());
-
-        carDao.save(carDB);
+        fetchCarById(id);
+        car.setVin(id);
+        carDao.save(carDBMapper.apply(car));
     }
 
     @Override
@@ -84,16 +60,7 @@ public class CarServiceImpl implements CarService {
     @Transactional(readOnly = true)
     @Override
     public Car fetchCarById(String id) throws MyCarResourceNotFoundException {
-        return carDao.findById(id).stream().map(car -> {
-                    Car carAPI = new Car();
-                    carAPI.setBrand(car.getBrand());
-                    carAPI.setColor(car.getColor());
-                    carAPI.setModel(car.getModel());
-                    carAPI.setYear(car.getYear());
-                    carAPI.setVin(car.getVin());
-
-                    return carAPI;
-                }).findFirst()
+        return carDao.findById(id).stream().map(carMapper).findFirst()
                 .orElseThrow(
                 () -> new MyCarResourceNotFoundException("Car not found!")
         );
@@ -101,35 +68,14 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public Car addCarWithVIN(String id, Car car) throws MyCarBadRequestException {
-        CarDB carDB = new CarDB();
-        carDB.setVin(id);
-        carDB.setBrand(car.getBrand());
-        carDB.setModel(car.getModel());
-        carDB.setYear(car.getYear());
-        carDB.setColor(car.getColor());
+        car.setVin(id);
+        CarDB returnedCar = carDao.save(carDBMapper.apply(car));
 
-        CarDB returnedCar = carDao.save(carDB);
-        Car carAPI = new Car();
-        carAPI.setVin(returnedCar.getVin());
-        carAPI.setBrand(returnedCar.getBrand());
-        carAPI.setModel(returnedCar.getModel());
-        carAPI.setYear(returnedCar.getYear());
-        carAPI.setColor(returnedCar.getColor());
-
-        return carAPI;
+        return carMapper.apply(returnedCar);
     }
 
     @Override
     public List<Car> findCarsByPeopleGuid(String guid) {
-        return carDao.findCarsByPeopleGuid(guid).stream().map(car -> {
-            Car carAPI = new Car();
-            carAPI.setVin(car.getVin());
-            carAPI.setBrand(car.getBrand());
-            carAPI.setModel(car.getModel());
-            carAPI.setColor(car.getColor());
-            carAPI.setYear(car.getYear());
-
-            return carAPI;
-        }).collect(Collectors.toList());
+        return carDao.findCarsByPeopleGuid(guid).stream().map(carMapper).collect(Collectors.toList());
     }
 }
