@@ -35,15 +35,21 @@ public class CarServiceImpl implements CarService {
         return carDao.findAll().stream().map(carMapper).collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public Car addCar(Car car) throws MyCarBadRequestException {
         UUID uuid = UUID.randomUUID();
         car.setVin(uuid.toString());
-        CarDB returnedCar = carDao.save(carDBMapper.apply(car));
 
-        return carMapper.apply(returnedCar);
+        try {
+            CarDB returnedCar = carDao.save(carDBMapper.apply(car));
+            return carMapper.apply(returnedCar);
+        } catch (Exception e) {
+            throw new MyCarBadRequestException(e.getMessage());
+        }
     }
 
+    @Transactional
     @Override
     public void updateCar(String id, Car car) throws MyCarResourceNotFoundException {
         fetchCarById(id);
@@ -51,6 +57,7 @@ public class CarServiceImpl implements CarService {
         carDao.save(carDBMapper.apply(car));
     }
 
+    @Transactional
     @Override
     public void deleteCar(String id) throws MyCarResourceNotFoundException {
         fetchCarById(id);
@@ -66,14 +73,21 @@ public class CarServiceImpl implements CarService {
         );
     }
 
+    @Transactional
     @Override
     public Car addCarWithVIN(String id, Car car) throws MyCarBadRequestException {
         car.setVin(id);
-        CarDB returnedCar = carDao.save(carDBMapper.apply(car));
 
-        return carMapper.apply(returnedCar);
+        try {
+            CarDB returnedCar = carDao.save(carDBMapper.apply(car));
+
+            return carMapper.apply(returnedCar);
+        } catch (Exception e) {
+            throw new MyCarBadRequestException(e.getMessage());
+        }
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Car> findCarsByPeopleGuid(String guid) {
         return carDao.findCarsByPeopleGuid(guid).stream().map(carMapper).collect(Collectors.toList());

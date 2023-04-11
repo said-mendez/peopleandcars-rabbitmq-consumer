@@ -9,9 +9,7 @@ import iuresti.training.peopleandcars.modelapi.PeopleCar;
 import iuresti.training.peopleandcars.modeldb.PeopleCarDB;
 
 import iuresti.training.peopleandcars.repository.PeopleCarDao;
-import iuresti.training.peopleandcars.service.CarService;
-import iuresti.training.peopleandcars.service.PeopleCarService;
-import iuresti.training.peopleandcars.service.PeopleService;
+import iuresti.training.peopleandcars.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,67 +24,39 @@ public class PeopleCarServiceImpl implements PeopleCarService {
     private final PeopleCarDao peopleCarDao;
     private final PeopleService peopleService;
     private final CarService carService;
+    private final PeopleCarDBMapper peopleCarDBMapper;
+    private final PeopleCarMapper peopleCarMapper;
 
     @Autowired
-    public PeopleCarServiceImpl(PeopleCarDao peopleCarDao, PeopleService peopleService, CarService carService) {
+    public PeopleCarServiceImpl(PeopleCarDao peopleCarDao, PeopleService peopleService, CarService carService,
+                                PeopleCarDBMapper peopleCarDBMapper, PeopleCarMapper peopleCarMapper) {
         this.peopleService = peopleService;
         this.peopleCarDao = peopleCarDao;
         this.carService = carService;
+        this.peopleCarDBMapper = peopleCarDBMapper;
+        this.peopleCarMapper = peopleCarMapper;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<PeopleCar> fetchAllPeopleCars() {
-       return peopleCarDao.findAll().stream().map(peopleCar -> {
-           PeopleCar peopleCarAPI = new PeopleCar();
-           peopleCarAPI.setUuid(peopleCar.getUuid());
-           peopleCarAPI.setPeopleId(peopleCar.getPeopleId());
-           peopleCarAPI.setCarId(peopleCar.getCarId());
+       return peopleCarDao.findAll().stream().map(peopleCarMapper).collect(Collectors.toList());
 
-           return peopleCarAPI;
-       }).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Car> fetchAllPersonCars(String guid) {
-//        return peopleCarDao.findAllPersonCars(guid).stream().map(car -> {
-//            Car carAPI = new Car();
-//            carAPI.setVin(car.getVin());
-//            carAPI.setModel(car.getModel());
-//            carAPI.setBrand(car.getBrand());
-//            carAPI.setYear(car.getYear());
-//            carAPI.setColor(car.getColor());
-//
-//            return carAPI;
-//        }).collect(Collectors.toList());
         return carService.findCarsByPeopleGuid(guid);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<People> fetchAllCarPeople(String vin) {
         return peopleService.fetchAllCarPeople(vin);
-//        return peopleDao.findPeopleByCarsVin(vin).stream().map(people -> {
-//            People peopleAPI = new People();
-//            peopleAPI.setGuid(people.getGuid());
-//            peopleAPI.setFirstName(people.getFirstName());
-//            peopleAPI.setLastName(people.getLastName());
-//            peopleAPI.setEmail(people.getEmail());
-//            peopleAPI.setGender(people.getGender());
-//
-//            return peopleAPI;
-//        }).collect(Collectors.toList());
-
-//        return peopleCarDao.findAllByCarId(vin).stream().map(people -> {
-//            People peopleAPI = new People();
-//            peopleAPI.setGuid(people.getGuid());
-//            peopleAPI.setFirstName(people.getFirstName());
-//            peopleAPI.setLastName(people.getLastName());
-//            peopleAPI.setEmail(people.getEmail());
-//            peopleAPI.setGender(people.getGender());
-//
-//            return peopleAPI;
-//        }).collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public PeopleCar addPeopleCar(PeopleCar peopleCar) throws MyCarBadRequestException {
         try {
@@ -100,23 +70,12 @@ public class PeopleCarServiceImpl implements PeopleCarService {
                 throw new MyCarBadRequestException("Car is already assigned to two persons");
             }
 
-//            People people = peopleService.fetchPeopleById(peopleCar.getPeopleId());
-//
-//            Car car = carService.fetchCarById(peopleCar.getCarId());
             UUID uuid = UUID.randomUUID();
+            peopleCar.setUuid(uuid.toString());
 
-            PeopleCarDB peopleCarDB = new PeopleCarDB();
-            peopleCarDB.setUuid(uuid.toString());
-            peopleCarDB.setPeopleId(peopleCar.getPeopleId());
-            peopleCarDB.setCarId(peopleCar.getCarId());
+            PeopleCarDB returnedPeopleCar = peopleCarDao.save(peopleCarDBMapper.apply(peopleCar));
 
-            PeopleCarDB returnedPeople = peopleCarDao.save(peopleCarDB);
-            PeopleCar peopleCarAPI = new PeopleCar();
-            peopleCarAPI.setUuid(returnedPeople.getUuid());
-            peopleCarAPI.setCarId(returnedPeople.getCarId());
-            peopleCarAPI.setPeopleId(returnedPeople.getPeopleId());
-
-            return peopleCarAPI;
+            return peopleCarMapper.apply(returnedPeopleCar);
         } catch (Exception e) {
             throw new MyCarBadRequestException("Something went wrong! " + e);
         }

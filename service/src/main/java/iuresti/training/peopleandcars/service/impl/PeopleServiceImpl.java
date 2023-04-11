@@ -37,14 +37,20 @@ public class PeopleServiceImpl implements PeopleService {
         return peopleDao.findAll().stream().map(peopleMapper).collect(Collectors.toList());
     }
 
+
+    @Transactional
     @Override
     public People addPeople(People people) throws MyCarBadRequestException {
         UUID uuid = UUID.randomUUID();
         people.setGuid(uuid.toString());
 
-        PeopleDB returnedPeople = peopleDao.save(peopleDBMapper.apply(people));
+        try {
+            PeopleDB returnedPeople = peopleDao.save(peopleDBMapper.apply(people));
 
-        return peopleMapper.apply(returnedPeople);
+            return peopleMapper.apply(returnedPeople);
+        } catch(Exception e) {
+            throw new MyCarBadRequestException(e.getMessage());
+        }
     }
 
     @Transactional
@@ -86,6 +92,7 @@ public class PeopleServiceImpl implements PeopleService {
         }
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<People> fetchAllCarPeople(String vin) {
         return peopleDao.findPeopleByCarsVin(vin).stream().map(peopleMapper).collect(Collectors.toList());
