@@ -95,7 +95,12 @@ public class CarServiceImpl implements CarService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<Car> findCarsByPeopleGuid(String guid) {
-        return carDao.findCarsByPeopleGuid(guid).stream().map(carMapper).collect(Collectors.toList());
+    public List<Car> findCarsByPeopleGuid(String guid) throws MyCarResourceNotFoundException {
+         List<CarDB> carDBList = carDao.findCarsByPeopleGuid(guid);
+         if (carDBList.isEmpty()) {
+             throw new MyCarResourceNotFoundException("There are not any cars assigned to people GUID: " + guid);
+         }
+
+         return carDBList.stream().map(carMapper).collect(Collectors.toList());
     }
 }

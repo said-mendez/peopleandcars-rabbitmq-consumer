@@ -2,11 +2,8 @@ package iuresti.training.peopleandcars.service;
 
 import iuresti.training.peopleandcars.exception.MyCarResourceNotFoundException;
 import iuresti.training.peopleandcars.modelapi.Car;
-import iuresti.training.peopleandcars.modelapi.People;
 import iuresti.training.peopleandcars.modeldb.CarDB;
-import iuresti.training.peopleandcars.modeldb.PeopleDB;
 import iuresti.training.peopleandcars.repository.CarDao;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,7 +12,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.*;
@@ -103,6 +99,67 @@ public class CarServiceTest {
         assertThatThrownBy(() -> carService.fetchCarById("fakeID-123123"))
                 .isInstanceOf(MyCarResourceNotFoundException.class)
                 .hasMessageContaining("Car not found!");
+    }
+
+    @Test
+    void shouldGetAllPersonCars() {
+        // Given:
+        CarDB carDB = new CarDB();
+        carDB.setVin("UYL-137-A");
+        carDB.setColor("Black");
+        carDB.setBrand("Subaru");
+        carDB.setModel("Impreza");
+        carDB.setYear(1990);
+
+        CarDB carDB1 = new CarDB();
+        carDB1.setVin("UYL-137-B");
+        carDB1.setColor("Red");
+        carDB1.setBrand("Ferrari");
+        carDB1.setModel("La Ferrari");
+        carDB1.setYear(1997);
+
+        Car car = new Car();
+        car.setVin("UYL-137-A");
+        car.setColor("Black");
+        car.setBrand("Subaru");
+        car.setModel("Impreza");
+        car.setYear(1990);
+
+        Car car1 = new Car();
+        car1.setVin("UYL-137-B");
+        car1.setColor("Red");
+        car1.setBrand("Ferrari");
+        car1.setModel("La Ferrari");
+        car1.setYear(1997);
+
+        List<Car> expectedCarsAssignedToPerson = new ArrayList<>();
+        expectedCarsAssignedToPerson.add(car);
+        expectedCarsAssignedToPerson.add(car1);
+
+        List<CarDB> carDBAssignedToPerson = new ArrayList<>();
+        carDBAssignedToPerson.add(carDB);
+        carDBAssignedToPerson.add(carDB1);
+
+        // When:
+        when(carDao.findCarsByPeopleGuid("1234-qwerty-456")).thenReturn(carDBAssignedToPerson);
+        List<Car> carServiceCurrent = carService.findCarsByPeopleGuid("1234-qwerty-456");
+
+        // Then:
+        assertThat(carServiceCurrent.size()).isEqualTo(expectedCarsAssignedToPerson.size());
+        assertThat(carServiceCurrent.get(0).getVin()).isEqualTo(expectedCarsAssignedToPerson.get(0).getVin());
+        assertThat(carServiceCurrent.get(1).getVin()).isEqualTo(expectedCarsAssignedToPerson.get(1).getVin());
+    }
+
+    @Test
+    void willThrowMyCarNotFoundExceptionWhenPersonDoesNotHaveCarsAssigned() {
+        // Given:
+        String fakeGUID = "fakeGUID";
+
+        // Then:
+        // When:
+        assertThatThrownBy(() -> carService.findCarsByPeopleGuid(fakeGUID))
+                .isInstanceOf(MyCarResourceNotFoundException.class)
+                .hasMessageContaining("There are not any cars assigned to people GUID: " + fakeGUID);
     }
 
     @Test

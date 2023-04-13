@@ -11,6 +11,7 @@ public class PeopleCarMapper implements Function<PeopleCarDB, PeopleCar> {
     @Override
     public PeopleCar apply(PeopleCarDB peopleCarDB) {
         PeopleCar peopleCar = new PeopleCar();
+        peopleCar.setUuid(peopleCarDB.getUuid());
         peopleCar.setCarId(peopleCarDB.getCarId());
         peopleCar.setPeopleId(peopleCarDB.getPeopleId());
 

@@ -1,12 +1,9 @@
 package iuresti.training.peopleandcars.service;
 
 import iuresti.training.peopleandcars.exception.MyCarResourceNotFoundException;
-import iuresti.training.peopleandcars.modelapi.Car;
 import iuresti.training.peopleandcars.modelapi.People;
-import iuresti.training.peopleandcars.modeldb.CarDB;
 import iuresti.training.peopleandcars.modeldb.PeopleDB;
 import iuresti.training.peopleandcars.repository.PeopleDao;
-import iuresti.training.peopleandcars.service.PeopleService;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,7 +95,7 @@ public class PeopleServiceTest {
     }
 
     @Test
-    void getPeopleByFakIdWillThrowMyCarNotFoundException() {
+    void getPeopleByFakeIdWillThrowMyCarNotFoundException() {
         // Given:
         // When:
         // Then:
@@ -160,14 +157,6 @@ public class PeopleServiceTest {
         peopleDB1.setEmail("jane@mail.com");
         peopleDB1.setGender("female");
 
-        CarDB carDB = new CarDB();
-        carDB.setVin("UYL-137-A");
-        carDB.setColor("Black");
-        carDB.setBrand("Subaru");
-        carDB.setModel("Impreza");
-        carDB.setYear(1990);
-
-
         People people = new People();
         people.setGuid("123-qwerty-123");
         people.setFirstName("Juan");
@@ -181,36 +170,6 @@ public class PeopleServiceTest {
         people1.setLastName("Doe");
         people1.setEmail("jane@mail.com");
         people1.setGender("female");
-
-        Car car = new Car();
-        car.setVin("UYL-137-A");
-        car.setColor("Black");
-        car.setBrand("Subaru");
-        car.setModel("Impreza");
-        car.setYear(1990);
-
-//        PeopleCarDB peopleCarDB = new PeopleCarDB();
-//        peopleCarDB.setCarId(carDB.getVin());
-//        peopleCarDB.setPeopleId(peopleDB.getGuid());
-//
-//        PeopleCarDB peopleCarDB1 = new PeopleCarDB();
-//        peopleCarDB1.setCarId(carDB.getVin());
-//        peopleCarDB1.setPeopleId(peopleDB1.getGuid());
-//
-//        List<PeopleCarDB> peopleCarDBList = new ArrayList<>();
-//        peopleCarDBList.add(peopleCarDB);
-//        peopleCarDBList.add(peopleCarDB1);
-//
-//        PeopleCar peopleCar = new PeopleCar();
-//        peopleCar.setCarId(car.getVin());
-//        peopleCar.setPeopleId(people.getGuid());
-//
-//        PeopleCar peopleCar1 = new PeopleCar();
-//        peopleCar1.setCarId(car.getVin());
-//        peopleCar1.setPeopleId(people1.getGuid());
-//        List<PeopleCar> peopleCarList = new ArrayList<>();
-//        peopleCarList.add(peopleCar);
-//        peopleCarList.add(peopleCar1);
 
         List<People> expectedPeopleAssignedToCar = new ArrayList<>();
         expectedPeopleAssignedToCar.add(people);
@@ -229,6 +188,19 @@ public class PeopleServiceTest {
         assertThat(peopleServiceCurrent.size()).isEqualTo(expectedPeopleAssignedToCar.size());
         assertThat(peopleServiceCurrent.get(0).getGuid()).isEqualTo(expectedPeopleAssignedToCar.get(0).getGuid());
         assertThat(peopleServiceCurrent.get(1).getGuid()).isEqualTo(expectedPeopleAssignedToCar.get(1).getGuid());
+    }
+
+    @Test
+    void willThrowMyCarNotFoundExceptionWhenCarDoesNotHavePeopleAssigned() {
+        // Given:
+        String fakeVIN = "fakeVIN";
+
+        // When:
+        // Then:
+        assertThatThrownBy(() -> peopleService.fetchAllCarPeople(fakeVIN))
+                .isInstanceOf(MyCarResourceNotFoundException.class)
+                .hasMessageContaining("There are not any people assigned to car VIN: " + fakeVIN)
+        ;
     }
 
     @Test

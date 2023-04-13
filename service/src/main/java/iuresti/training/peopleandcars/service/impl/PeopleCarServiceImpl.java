@@ -39,20 +39,25 @@ public class PeopleCarServiceImpl implements PeopleCarService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<PeopleCar> fetchAllPeopleCars() {
-       return peopleCarDao.findAll().stream().map(peopleCarMapper).collect(Collectors.toList());
+    public List<PeopleCar> fetchAllPeopleCars() throws MyCarResourceNotFoundException {
+        List<PeopleCarDB> peopleCarDBList = peopleCarDao.findAll();
+        if (peopleCarDBList.isEmpty()) {
+            throw new MyCarResourceNotFoundException("There are not any PeopleCar records!");
+        }
+
+       return peopleCarDBList.stream().map(peopleCarMapper).collect(Collectors.toList());
 
     }
 
     @Transactional(readOnly = true)
     @Override
-    public List<Car> fetchAllPersonCars(String guid) {
+    public List<Car> fetchAllPersonCars(String guid) throws MyCarResourceNotFoundException {
         return carService.findCarsByPeopleGuid(guid);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public List<People> fetchAllCarPeople(String vin) {
+    public List<People> fetchAllCarPeople(String vin) throws MyCarResourceNotFoundException {
         return peopleService.fetchAllCarPeople(vin);
     }
 

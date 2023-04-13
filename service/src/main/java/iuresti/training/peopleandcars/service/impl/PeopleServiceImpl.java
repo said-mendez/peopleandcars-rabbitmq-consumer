@@ -100,7 +100,12 @@ public class PeopleServiceImpl implements PeopleService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<People> fetchAllCarPeople(String vin) {
-        return peopleDao.findPeopleByCarsVin(vin).stream().map(peopleMapper).collect(Collectors.toList());
+    public List<People> fetchAllCarPeople(String vin) throws MyCarResourceNotFoundException {
+        List<PeopleDB> peopleDBList = peopleDao.findPeopleByCarsVin(vin);
+        if (peopleDBList.isEmpty()) {
+            throw new MyCarResourceNotFoundException("There are not any people assigned to car VIN: " + vin);
+        }
+
+        return peopleDBList.stream().map(peopleMapper).collect(Collectors.toList());
     }
 }

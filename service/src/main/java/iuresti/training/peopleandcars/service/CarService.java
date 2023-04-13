@@ -14,5 +14,5 @@ public interface CarService {
     void deleteCar(String id) throws MyCarResourceNotFoundException;
     Car fetchCarById(String id) throws MyCarResourceNotFoundException;
     Car addCarWithVIN(String id, Car car) throws MyCarBadRequestException;
-    List<Car> findCarsByPeopleGuid(String guid);
+    List<Car> findCarsByPeopleGuid(String guid) throws MyCarResourceNotFoundException;
 }

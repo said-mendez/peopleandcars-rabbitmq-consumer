@@ -9,9 +9,9 @@ import iuresti.training.peopleandcars.modelapi.PeopleCar;
 import java.util.List;
 
 public interface PeopleCarService {
-    List<PeopleCar> fetchAllPeopleCars();
-    List<Car> fetchAllPersonCars(String guid);
-    List<People> fetchAllCarPeople(String vin);
+    List<PeopleCar> fetchAllPeopleCars() throws MyCarResourceNotFoundException;
+    List<Car> fetchAllPersonCars(String guid) throws MyCarResourceNotFoundException;
+    List<People> fetchAllCarPeople(String vin) throws MyCarResourceNotFoundException;
     PeopleCar addPeopleCar(PeopleCar peopleCar) throws MyCarBadRequestException;
     void updatePeopleCar(String guid, String vin, PeopleCar peopleCar) throws MyCarBadRequestException;
     void deletePeopleCar(String guid, String vin) throws MyCarResourceNotFoundException;
