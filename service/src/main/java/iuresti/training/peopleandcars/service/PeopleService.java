@@ -7,7 +7,7 @@ import iuresti.training.peopleandcars.modelapi.People;
 import java.util.List;
 
 public interface PeopleService {
-    List<People> fetchAllPeople();
+    List<People> fetchAllPeople() throws MyCarResourceNotFoundException;
     People addPeople(People people) throws MyCarBadRequestException;
     void updatePeople(String id, People people) throws MyCarResourceNotFoundException;
     void deletePeople(String id) throws MyCarResourceNotFoundException;

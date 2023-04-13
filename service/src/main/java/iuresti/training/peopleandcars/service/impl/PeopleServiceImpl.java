@@ -33,8 +33,14 @@ public class PeopleServiceImpl implements PeopleService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<People> fetchAllPeople() {
-        return peopleDao.findAll().stream().map(peopleMapper).collect(Collectors.toList());
+    public List<People> fetchAllPeople() throws MyCarResourceNotFoundException {
+        List<PeopleDB> peopleList = peopleDao.findAll();
+
+        if (peopleList.isEmpty()) {
+            throw new MyCarResourceNotFoundException("There are not any people records!");
+        }
+
+        return peopleList.stream().map(peopleMapper).collect(Collectors.toList());
     }
 
 

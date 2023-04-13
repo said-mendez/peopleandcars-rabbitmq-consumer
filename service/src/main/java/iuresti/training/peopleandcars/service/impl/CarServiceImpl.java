@@ -31,8 +31,14 @@ public class CarServiceImpl implements CarService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<Car> fetchAllCars() {
-        return carDao.findAll().stream().map(carMapper).collect(Collectors.toList());
+    public List<Car> fetchAllCars() throws MyCarResourceNotFoundException {
+         List<CarDB> carDBList = carDao.findAll();
+
+        if (carDBList.isEmpty()) {
+            throw new MyCarResourceNotFoundException("There are not any cars records!");
+        }
+
+        return carDBList.stream().map(carMapper).collect(Collectors.toList());
     }
 
     @Transactional
