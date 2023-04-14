@@ -36,6 +36,22 @@ public class PeopleRepositoryTest {
     }
 
     @Test
+    void tryingToAddPersonWithRepeatedPKThrowDataIntegrityViolationException() {
+        // Given:
+        PeopleDB personDB = new PeopleDB();
+        personDB.setGuid("45059a71-988f-424c-8aa8-3182e8d76711");
+        personDB.setFirstName("Test");
+        personDB.setLastName("Male");
+        personDB.setGender("male");
+
+        // When:
+        // Then:
+        assertThatThrownBy(() -> peopleDao.save(personDB))
+                .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class)
+        ;
+    }
+
+    @Test
     void canGetPeopleByCarsVin() {
         // Given:
         // Then:
