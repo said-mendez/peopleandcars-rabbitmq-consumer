@@ -1,5 +1,6 @@
 package iuresti.training.peopleandcars.service;
 
+import iuresti.training.peopleandcars.exception.MyCarBadRequestException;
 import iuresti.training.peopleandcars.exception.MyCarResourceNotFoundException;
 import iuresti.training.peopleandcars.modelapi.Car;
 import iuresti.training.peopleandcars.modeldb.CarDB;
@@ -12,10 +13,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.BDDMockito.given;
 
 @SpringBootTest
 public class CarServiceTest {
@@ -102,6 +103,42 @@ public class CarServiceTest {
     }
 
     @Test
+    void canAddCar() {
+        // Given:
+        CarDB carDB = new CarDB();
+        carDB.setBrand("Toyota");
+        carDB.setColor("Pink");
+        carDB.setModel("Corolla");
+        carDB.setYear(2002);
+
+        Car expectedCar = new Car();
+        expectedCar.setBrand("Toyota");
+        expectedCar.setColor("Pink");
+        expectedCar.setModel("Corolla");
+        expectedCar.setYear(2002);
+
+        // When:
+        when(carDao.save(any(CarDB.class))).thenReturn(carDB);
+
+        Car serviceCurrentCar = carService.addCar(expectedCar);
+        serviceCurrentCar.setVin(expectedCar.getVin());
+
+        // Then:
+        assertThat(serviceCurrentCar).isEqualTo(expectedCar);
+    }
+
+    @Test
+    void addCarWithoutAttributesThrowMyCarBadRequestException() {
+        // Given:
+        Car expectedCar = new Car();
+
+        // When:
+        // Then:
+        assertThatThrownBy(() -> carService.addCar(expectedCar))
+                .isInstanceOf(MyCarBadRequestException.class);
+    }
+
+    @Test
     void shouldGetAllPersonCars() {
         // Given:
         CarDB carDB = new CarDB();
@@ -151,6 +188,46 @@ public class CarServiceTest {
     }
 
     @Test
+    void canAddCarWithVIN() {
+        // Given
+        UUID uuid = UUID.randomUUID();
+        String vin = uuid.toString();
+
+        CarDB carDB = new CarDB();
+        carDB.setVin(vin);
+        carDB.setColor("Black");
+        carDB.setBrand("Subaru");
+        carDB.setModel("Impreza");
+        carDB.setYear(1990);
+
+        Car expectedCar = new Car();
+        expectedCar.setColor("Black");
+        expectedCar.setBrand("Subaru");
+        expectedCar.setModel("Impreza");
+        expectedCar.setYear(1990);
+
+        // When:
+        when(carDao.save(any(CarDB.class))).thenReturn(carDB);
+        Car serviceCurrentCar = carService.addCarWithVIN(vin, expectedCar);
+
+        // Then:
+        assertThat(serviceCurrentCar).isEqualTo(expectedCar);
+    }
+
+    @Test
+    void addCarWithVINWithoutAttributesThrowMyCarBadRequestException() {
+        // Given:
+        UUID uuid = UUID.randomUUID();
+        String vin = uuid.toString();
+        Car expectedCar = new Car();
+
+        // When:
+        // Then:
+        assertThatThrownBy(() -> carService.addCarWithVIN(vin, expectedCar))
+                .isInstanceOf(MyCarBadRequestException.class);
+    }
+
+    @Test
     void willThrowMyCarNotFoundExceptionWhenPersonDoesNotHaveCarsAssigned() {
         // Given:
         String fakeGUID = "fakeGUID";
@@ -160,6 +237,34 @@ public class CarServiceTest {
         assertThatThrownBy(() -> carService.findCarsByPeopleGuid(fakeGUID))
                 .isInstanceOf(MyCarResourceNotFoundException.class)
                 .hasMessageContaining("There are not any cars assigned to people GUID: " + fakeGUID);
+    }
+
+    @Test
+    void canUpdateCar() {
+        // Given
+        UUID uuid = UUID.randomUUID();
+        String vin = uuid.toString();
+
+        CarDB carDB = new CarDB();
+        carDB.setVin(vin);
+        carDB.setColor("Black");
+        carDB.setBrand("Subaru");
+        carDB.setModel("Impreza");
+        carDB.setYear(1990);
+
+        Car expectedCar = new Car();
+        expectedCar.setVin(vin);
+        expectedCar.setColor("Black");
+        expectedCar.setBrand("Subaru");
+        expectedCar.setModel("Impreza");
+        expectedCar.setYear(1990);
+
+        // When:
+        when(carDao.save(any(CarDB.class))).thenReturn(carDB);
+        when(carDao.findById(vin)).thenReturn(Optional.of(carDB));
+
+        // Then:
+        carService.updateCar(vin, expectedCar);
     }
 
     @Test
@@ -178,6 +283,25 @@ public class CarServiceTest {
         assertThatThrownBy(() -> carService.updateCar(fakeId, carToUpdate))
                 .isInstanceOf(MyCarResourceNotFoundException.class)
                 .hasMessageContaining("Car not found!");
+    }
+
+    @Test
+    void canDeleteCar() {
+        // Given:
+        String vin = "UYL-137-A";
+
+        CarDB carDB = new CarDB();
+        carDB.setVin(vin);
+        carDB.setColor("Black");
+        carDB.setBrand("Subaru");
+        carDB.setModel("Impreza");
+        carDB.setYear(1990);
+
+        // When:
+        when(carDao.findById(vin)).thenReturn(Optional.of(carDB));
+
+        // Then:
+        carService.deleteCar(vin);
     }
 
     @Test

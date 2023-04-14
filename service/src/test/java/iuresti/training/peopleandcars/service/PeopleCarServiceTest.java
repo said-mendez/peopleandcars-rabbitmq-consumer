@@ -1,5 +1,6 @@
 package iuresti.training.peopleandcars.service;
 
+import iuresti.training.peopleandcars.exception.MyCarBadRequestException;
 import iuresti.training.peopleandcars.exception.MyCarResourceNotFoundException;
 import iuresti.training.peopleandcars.modelapi.Car;
 import iuresti.training.peopleandcars.modelapi.People;
@@ -146,6 +147,93 @@ public class PeopleCarServiceTest {
         // When:
         assertThatThrownBy(() -> peopleCarService.fetchAllPersonCars(fakeGUID))
                 .isInstanceOf(MyCarResourceNotFoundException.class);
+    }
+
+    @Test
+    void canAddPeopleCar() {
+        // Given:
+        String carId = "UYL-137-A";
+        String peopleId = "123-abc-123";
+        PeopleCar expectedPeopleCar = new PeopleCar();
+        expectedPeopleCar.setPeopleId(peopleId);
+        expectedPeopleCar.setCarId(carId);
+
+        PeopleCarDB peopleCarDB = new PeopleCarDB();
+        peopleCarDB.setPeopleId(peopleId);
+        peopleCarDB.setCarId(carId);
+
+        // When:
+        when(peopleCarDao.save(any(PeopleCarDB.class))).thenReturn(peopleCarDB);
+        when(peopleCarDao.countByCarIdAndPeopleId(carId, peopleId)).thenReturn(0);
+        when(peopleCarDao.countByCarId(carId)).thenReturn(0);
+
+        PeopleCar serviceCurrentPeopleCar = peopleCarService.addPeopleCar(expectedPeopleCar);
+        serviceCurrentPeopleCar.setUuid(expectedPeopleCar.getUuid());
+
+        // Then:
+        assertThat(serviceCurrentPeopleCar).isEqualTo(expectedPeopleCar);
+    }
+
+    @Test
+    void canNotAddPeopleCarIfAlreadyExist() {
+        // Given:
+        String carId = "UYL-137-A";
+        String peopleId = "123-abc-123";
+        PeopleCar expectedPeopleCar = new PeopleCar();
+        expectedPeopleCar.setPeopleId(peopleId);
+        expectedPeopleCar.setCarId(carId);
+
+        PeopleCarDB peopleCarDB = new PeopleCarDB();
+        peopleCarDB.setPeopleId(peopleId);
+        peopleCarDB.setCarId(carId);
+
+        // When:
+        when(peopleCarDao.save(any(PeopleCarDB.class))).thenReturn(peopleCarDB);
+        when(peopleCarDao.countByCarIdAndPeopleId(carId, peopleId)).thenReturn(1);
+
+        // Then:
+        assertThatThrownBy(() -> peopleCarService.addPeopleCar(expectedPeopleCar))
+                .isInstanceOf(MyCarBadRequestException.class)
+                .hasMessageContaining("People car relation already exist!")
+        ;
+    }
+
+    @Test
+    void canNotAddPeopleCarIfCarIsAlreadyAssignedToTwoPersons() {
+        // Given:
+        String carId = "UYL-137-A";
+        String peopleId = "123-abc-123";
+        PeopleCar expectedPeopleCar = new PeopleCar();
+        expectedPeopleCar.setPeopleId(peopleId);
+        expectedPeopleCar.setCarId(carId);
+
+        PeopleCarDB peopleCarDB = new PeopleCarDB();
+        peopleCarDB.setPeopleId(peopleId);
+        peopleCarDB.setCarId(carId);
+
+        // When:
+        when(peopleCarDao.save(any(PeopleCarDB.class))).thenReturn(peopleCarDB);
+        when(peopleCarDao.countByCarIdAndPeopleId(carId, peopleId)).thenReturn(0);
+        when(peopleCarDao.countByCarId(carId)).thenReturn(2);
+
+        // Then:
+        assertThatThrownBy(() -> peopleCarService.addPeopleCar(expectedPeopleCar))
+                .isInstanceOf(MyCarBadRequestException.class)
+                .hasMessageContaining("Car is already assigned to two persons!")
+        ;
+    }
+
+    @Test
+    void tryingToAddPeopleCarWithoutAttributesThrowMyCarBadRequestException() {
+        // Given:
+        PeopleCar expectedPeopleCar = new PeopleCar();
+
+        // When:
+        // Then:
+        assertThatThrownBy(() -> peopleCarService.addPeopleCar(expectedPeopleCar))
+                .isInstanceOf(MyCarBadRequestException.class)
+                .hasMessageStartingWith("Something went wrong! ")
+        ;
     }
 
     @Test

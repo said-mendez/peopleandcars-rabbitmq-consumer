@@ -13,6 +13,4 @@ public interface PeopleCarService {
     List<Car> fetchAllPersonCars(String guid) throws MyCarResourceNotFoundException;
     List<People> fetchAllCarPeople(String vin) throws MyCarResourceNotFoundException;
     PeopleCar addPeopleCar(PeopleCar peopleCar) throws MyCarBadRequestException;
-    void updatePeopleCar(String guid, String vin, PeopleCar peopleCar) throws MyCarBadRequestException;
-    void deletePeopleCar(String guid, String vin) throws MyCarResourceNotFoundException;
 }

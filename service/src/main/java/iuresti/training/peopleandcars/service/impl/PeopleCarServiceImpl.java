@@ -72,7 +72,7 @@ public class PeopleCarServiceImpl implements PeopleCarService {
 
             int carCount = peopleCarDao.countByCarId(peopleCar.getCarId());
             if (carCount >= 2) {
-                throw new MyCarBadRequestException("Car is already assigned to two persons");
+                throw new MyCarBadRequestException("Car is already assigned to two persons!");
             }
 
             UUID uuid = UUID.randomUUID();
@@ -84,16 +84,5 @@ public class PeopleCarServiceImpl implements PeopleCarService {
         } catch (Exception e) {
             throw new MyCarBadRequestException("Something went wrong! " + e);
         }
-    }
-
-    @Override
-    public void updatePeopleCar(String guid, String vin, PeopleCar peopleCar) throws MyCarBadRequestException {
-        // TODO: Check if a record exists with the given vin, gui
-        // peopleCarDao.update(guid, vin, peopleCar);
-    }
-
-    @Override
-    public void deletePeopleCar(String guid, String vin) throws MyCarResourceNotFoundException {
-
     }
 }

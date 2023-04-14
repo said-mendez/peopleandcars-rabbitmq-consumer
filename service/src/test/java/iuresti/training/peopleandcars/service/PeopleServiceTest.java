@@ -1,10 +1,10 @@
 package iuresti.training.peopleandcars.service;
 
+import iuresti.training.peopleandcars.exception.MyCarBadRequestException;
 import iuresti.training.peopleandcars.exception.MyCarResourceNotFoundException;
 import iuresti.training.peopleandcars.modelapi.People;
 import iuresti.training.peopleandcars.modeldb.PeopleDB;
 import iuresti.training.peopleandcars.repository.PeopleDao;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,7 +17,6 @@ import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.BDDMockito.given;
 
 @SpringBootTest
 public class PeopleServiceTest {
@@ -105,39 +104,79 @@ public class PeopleServiceTest {
     }
 
     @Test
-    @Disabled
     void canAddPeople() {
         // Given:
-        UUID uuid = UUID.randomUUID();
-        PeopleDB peopleDB = new PeopleDB();
-        peopleDB.setGuid(uuid.toString());
-        peopleDB.setFirstName("Eduardo");
-        peopleDB.setLastName("Méndez");
-        peopleDB.setGender("male");
-        peopleDB.setEmail("lalo@mail.com");
-
         People expectedPerson = new People();
-        expectedPerson.setGuid(uuid.toString());
         expectedPerson.setFirstName("Eduardo");
         expectedPerson.setLastName("Méndez");
         expectedPerson.setGender("male");
         expectedPerson.setEmail("lalo@mail.com");
 
+        PeopleDB peopleDB = new PeopleDB();
+        peopleDB.setFirstName("Eduardo");
+        peopleDB.setLastName("Méndez");
+        peopleDB.setGender("male");
+        peopleDB.setEmail("lalo@mail.com");
+
         // When:
-        when(peopleDao.save(peopleDB)).thenReturn(peopleDB);
-        given(peopleDao.save(peopleDB))
-                .willReturn(peopleDB);
-        peopleService.addPeople(expectedPerson);
+        when(peopleDao.save(any(PeopleDB.class))).thenReturn(peopleDB);
+
+        People serviceCurrentPerson = peopleService.addPeople(expectedPerson);
+        serviceCurrentPerson.setGuid(expectedPerson.getGuid());
 
         // Then:
-        // Use it to capture argument values for further assertions.
-//        ArgumentCaptor<PeopleDB> peopleDBArgumentCaptor = ArgumentCaptor.forClass(PeopleDB.class);
-//        PeopleDB capturedPerson = verify(peopleDao).save(peopleDBArgumentCaptor.capture());
-//
-//        System.out.println(peopleDBArgumentCaptor.capture());
-//        System.out.println(capturedPerson);
+        assertThat(serviceCurrentPerson).isEqualTo(expectedPerson);
+    }
 
-//        assertThat(capturedPerson).isEqualTo(person);
+    @Test
+    void addPersonWithoutAttributesThrowMyCarBadRequestException() {
+        // Given:
+        People expectedPerson = new People();
+
+        // When:
+        // Then:
+        assertThatThrownBy(() -> peopleService.addPeople(expectedPerson))
+                .isInstanceOf(MyCarBadRequestException.class);
+    }
+
+    @Test
+    void canAddPeopleWithGUID() {
+        // Given:
+        UUID uuid = UUID.randomUUID();
+        String guid = uuid.toString();
+        People expectedPerson = new People();
+        expectedPerson.setFirstName("Eduardo");
+        expectedPerson.setLastName("Méndez");
+        expectedPerson.setGender("male");
+        expectedPerson.setEmail("lalo@mail.com");
+
+        PeopleDB peopleDB = new PeopleDB();
+        peopleDB.setGuid(guid);
+        peopleDB.setFirstName("Eduardo");
+        peopleDB.setLastName("Méndez");
+        peopleDB.setGender("male");
+        peopleDB.setEmail("lalo@mail.com");
+
+        // When:
+        when(peopleDao.save(any(PeopleDB.class))).thenReturn(peopleDB);
+
+        People serviceCurrentPerson = peopleService.addPeopleWithGUID(guid, expectedPerson);
+
+        // Then:
+        assertThat(serviceCurrentPerson).isEqualTo(expectedPerson);
+    }
+
+    @Test
+    void addPersonWithGUIDWithoutAttributesThrowMyCarBadRequestException() {
+        // Given:
+        UUID uuid = UUID.randomUUID();
+        String guid = uuid.toString();
+        People expectedPerson = new People();
+
+        // When:
+        // Then:
+        assertThatThrownBy(() -> peopleService.addPeopleWithGUID(guid, expectedPerson))
+                .isInstanceOf(MyCarBadRequestException.class);
     }
 
     @Test
@@ -204,6 +243,32 @@ public class PeopleServiceTest {
     }
 
     @Test
+    void canUpdatePerson() {
+        // Given:
+        String guid = "NewPerson007";
+        People expectedPerson = new People();
+        expectedPerson.setGuid(guid);
+        expectedPerson.setFirstName("Eduardo-Edited");
+        expectedPerson.setLastName("Méndez");
+        expectedPerson.setGender("male");
+        expectedPerson.setEmail("lalo@mail.com");
+
+        PeopleDB peopleDB = new PeopleDB();
+        peopleDB.setGuid(guid);
+        peopleDB.setFirstName("Eduardo");
+        peopleDB.setLastName("Méndez");
+        peopleDB.setGender("male");
+        peopleDB.setEmail("lalo@mail.com");
+
+        // When:
+        when(peopleDao.save(any(PeopleDB.class))).thenReturn(peopleDB);
+        when(peopleDao.findById(guid)).thenReturn(Optional.of(peopleDB));
+
+        // Then:
+        peopleService.updatePeople(guid, expectedPerson);
+    }
+
+    @Test
     void tryingToUpdatePersonWithFakeIdThrowMyCarNotFoundException() {
         // Given:
         String fakeId = "fakeId";
@@ -219,6 +284,25 @@ public class PeopleServiceTest {
         assertThatThrownBy(() -> peopleService.updatePeople(fakeId, peopleToUpdate))
                 .isInstanceOf(MyCarResourceNotFoundException.class)
                 .hasMessageContaining("People not found!");
+    }
+
+    @Test
+    void canDeletePeople() {
+        // Given:
+        String guid = "NewPerson007";
+
+        PeopleDB peopleDB = new PeopleDB();
+        peopleDB.setGuid(guid);
+        peopleDB.setFirstName("Eduardo");
+        peopleDB.setLastName("Méndez");
+        peopleDB.setGender("male");
+        peopleDB.setEmail("lalo@mail.com");
+
+        // When:
+        when(peopleDao.findById(guid)).thenReturn(Optional.of(peopleDB));
+
+        // Then:
+        peopleService.deletePeople(guid);
     }
 
     @Test
