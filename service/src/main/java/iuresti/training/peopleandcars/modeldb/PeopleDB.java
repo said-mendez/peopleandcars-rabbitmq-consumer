@@ -1,6 +1,8 @@
 package iuresti.training.peopleandcars.modeldb;
 
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.util.HashSet;
@@ -18,6 +20,10 @@ public class PeopleDB {
     private String lastName;
     private String email;
     private String gender;
+    public Set<CarDB> getCars() {
+        return cars;
+    }
+
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "people_car",
@@ -34,12 +40,11 @@ public class PeopleDB {
                     )
             }
     )
-//    @OneToMany(mappedBy = "car")
+    @JsonIgnore
     private Set<CarDB> cars = new HashSet<>();
 
-//
-//    public void addCar(CarDB carDB) {
-//        this.cars.add(carDB);
-//        carDB.getPeople().add(this);
-//    }
+    public void addCar(CarDB carDB) {
+        this.cars.add(carDB);
+        carDB.getPeople().add(this);
+    }
 }

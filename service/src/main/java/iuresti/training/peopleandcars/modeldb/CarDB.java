@@ -2,6 +2,7 @@ package iuresti.training.peopleandcars.modeldb;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.util.HashSet;
@@ -26,14 +27,14 @@ public class CarDB {
                 CascadeType.MERGE
             }
     )
-//    @OneToMany(mappedBy = "people")
+    @JsonIgnore
     private Set<PeopleDB> people = new HashSet<>();
 
-//    public Set<PeopleDB> getPeople() {
-//        return people;
-//    }
-//
-//    public void setPeople(Set<PeopleDB> people) {
-//        this.people = people;
-//    }
+    public Set<PeopleDB> getPeople() {
+        return people;
+    }
+
+    public void setPeople(Set<PeopleDB> people) {
+        this.people = people;
+    }
 }

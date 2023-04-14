@@ -48,7 +48,7 @@ public class CarsApiController implements CarsApi {
     public ResponseEntity<Map<String, Boolean>> deleteCar(String vin) {
         carService.deleteCar(vin);
         Map<String, Boolean> map = new HashMap<>();
-        map.put("sucess", true);
+        map.put("success", true);
 
         return new ResponseEntity<>(map, HttpStatus.OK);
     }
@@ -71,7 +71,7 @@ public class CarsApiController implements CarsApi {
     @Override
     public ResponseEntity<Map<String, Boolean>> updateCar(String vin, Car body) {
         Map<String, Boolean> map = new HashMap<>();
-        map.put("sucess", true);
+        map.put("success", true);
         carService.updateCar(vin, body);
 
         return new ResponseEntity<>(map, HttpStatus.OK);
