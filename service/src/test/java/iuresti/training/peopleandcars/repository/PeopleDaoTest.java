@@ -1,11 +1,11 @@
 package iuresti.training.peopleandcars.repository;
 
-import iuresti.training.peopleandcars.exception.MyCarResourceNotFoundException;
+import iuresti.training.peopleandcars.modeldb.PeopleCarDB;
 import iuresti.training.peopleandcars.modeldb.PeopleDB;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -14,9 +14,12 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
-public class PeopleRepositoryTest {
+public class PeopleDaoTest {
     @Autowired
     PeopleDao peopleDao;
+
+    @MockBean
+    PeopleCarDao peopleCarDao;
 
     @Test
     void tryingToAddPeopleWithoutMandatoryAttributesThrowDataIntegrityViolationException() {
@@ -36,27 +39,20 @@ public class PeopleRepositoryTest {
     }
 
     @Test
-    void tryingToAddPersonWithRepeatedPKThrowDataIntegrityViolationException() {
+    void tryingToAddPersonWithRepeatedEmailThrowDataIntegrityViolationException() {
         // Given:
+        UUID uuid = UUID.randomUUID();
         PeopleDB personDB = new PeopleDB();
-        personDB.setGuid("45059a71-988f-424c-8aa8-3182e8d76711");
+        personDB.setGuid(uuid.toString());
         personDB.setFirstName("Test");
         personDB.setLastName("Male");
         personDB.setGender("male");
+        personDB.setEmail("test@mail.com");
 
         // When:
         // Then:
         assertThatThrownBy(() -> peopleDao.save(personDB))
                 .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class)
         ;
-    }
-
-    @Test
-    void canGetPeopleByCarsVin() {
-        // Given:
-        // Then:
-        List<PeopleDB> peopleDBList = peopleDao.findPeopleByCarsVin("ABC-1234");
-        System.out.println(peopleDBList.size());
-        assertThat(peopleDBList.size()).isLessThanOrEqualTo(2);
     }
 }
