@@ -61,8 +61,27 @@ public class CarControllerTest {
         ResponseEntity<PeopleAndCarsError> response = restTemplate.postForEntity("/api/cars", expectedCar, PeopleAndCarsError.class);
 
         // Then:
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isInstanceOf(PeopleAndCarsError.class);
+    }
+
+    @Test
+    void givenWrongCarShouldThrowMyCarBadRequestException1() {
+        // Given:
+        Car car = new Car();
+        car.setVin("UYL-137-A");
+        car.setColor("Black");
+        car.setBrand("Subaru");
+        car.setModel("Impreza");
+        car.setYear(1990);
+
+        // When:
+        when(carService.addCar(car)).thenThrow(new MyCarBadRequestException("Car incomplete attributes!"));
+        ResponseEntity<PeopleAndCarsError> response = restTemplate.postForEntity("/api/cars", car, PeopleAndCarsError.class);
+
+        // Then:
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody().getMessage()).isEqualTo("Car incomplete attributes!");
     }
 
     @Test

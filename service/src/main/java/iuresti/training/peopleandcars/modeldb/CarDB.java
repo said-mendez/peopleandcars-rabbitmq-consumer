@@ -29,12 +29,4 @@ public class CarDB {
     )
     @JsonIgnore
     private Set<PeopleDB> people = new HashSet<>();
-
-    public Set<PeopleDB> getPeople() {
-        return people;
-    }
-
-    public void setPeople(Set<PeopleDB> people) {
-        this.people = people;
-    }
 }

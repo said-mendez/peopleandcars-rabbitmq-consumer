@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import iuresti.training.peopleandcars.annotation.IgnoreCoverage;
 import org.openapitools.jackson.nullable.JsonNullable;
 import java.time.OffsetDateTime;
 import javax.validation.Valid;
@@ -141,11 +142,13 @@ public class People {
         Objects.equals(this.gender, people.gender);
   }
 
+  @IgnoreCoverage
   @Override
   public int hashCode() {
     return Objects.hash(guid, firstName, lastName, email, gender);
   }
 
+  @IgnoreCoverage
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
@@ -159,6 +162,7 @@ public class People {
     return sb.toString();
   }
 
+  @IgnoreCoverage
   /**
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).

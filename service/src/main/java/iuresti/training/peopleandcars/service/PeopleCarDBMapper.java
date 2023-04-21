@@ -13,7 +13,7 @@ public class PeopleCarDBMapper implements Function<PeopleCar, PeopleCarDB> {
         PeopleCarDB peopleCarDB = new PeopleCarDB();
         peopleCarDB.setUuid(peopleCar.getUuid());
         peopleCarDB.setPeopleId(peopleCar.getPeopleId());
-        peopleCarDB.setCarId(peopleCar.getUuid());
+        peopleCarDB.setCarId(peopleCar.getCarId());
 
         return peopleCarDB;
     }

@@ -1,5 +1,6 @@
 package iuresti.training.peopleandcars.controller;
 
+import iuresti.training.peopleandcars.annotation.IgnoreCoverage;
 import iuresti.training.peopleandcars.modelapi.Car;
 import iuresti.training.peopleandcars.modelapi.People;
 import iuresti.training.peopleandcars.modelapi.PeopleCar;
@@ -33,6 +34,7 @@ public class PeopleApiController implements PeopleApi {
         this.peopleCarService = peopleCarService;
     }
 
+    @IgnoreCoverage
     public Optional<NativeWebRequest> getRequest() {
         return Optional.ofNullable(request);
     }

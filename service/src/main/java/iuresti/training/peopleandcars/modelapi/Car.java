@@ -3,6 +3,8 @@ package iuresti.training.peopleandcars.modelapi;
 import java.net.URI;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import iuresti.training.peopleandcars.annotation.IgnoreCoverage;
+
 import javax.validation.constraints.*;
 
 
@@ -121,6 +123,7 @@ public class Car {
     this.color = color;
   }
 
+  @IgnoreCoverage
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -137,11 +140,13 @@ public class Car {
         Objects.equals(this.color, car.color);
   }
 
+  @IgnoreCoverage
   @Override
   public int hashCode() {
     return Objects.hash(vin, brand, model, year, color);
   }
 
+  @IgnoreCoverage
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
@@ -155,6 +160,7 @@ public class Car {
     return sb.toString();
   }
 
+  @IgnoreCoverage
   /**
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).

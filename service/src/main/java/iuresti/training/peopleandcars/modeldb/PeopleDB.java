@@ -42,9 +42,4 @@ public class PeopleDB {
     )
     @JsonIgnore
     private Set<CarDB> cars = new HashSet<>();
-
-    public void addCar(CarDB carDB) {
-        this.cars.add(carDB);
-        carDB.getPeople().add(this);
-    }
 }
